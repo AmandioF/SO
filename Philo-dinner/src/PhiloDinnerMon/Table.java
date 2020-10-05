@@ -2,9 +2,9 @@ package PhiloDinnerMon;
 
 public class Table {
 	
-   final static int THINKING = 1;
-   final static int EATING = 2;
-   final static int HUNGER = 3;
+   final static int THINKING = 1; // no op
+   final static int EATING = 2;  //  running 
+   final static int HUNGER = 3;  //  waiting
    final static int NMB_PHILO = 5;
    boolean[] forks = new boolean[NMB_PHILO];
    int[] philos = new int[NMB_PHILO];
@@ -18,7 +18,11 @@ public class Table {
 
    public synchronized void getFork(int philo){
       philos[philo] = HUNGER;
-      while(philos[rightFork(philo)] == EATING){
+      
+      int leftForkId = leftFork(philo);
+	  int rightForkId = rightFork(philo);
+	  
+      while(forks[leftForkId] == false || philos[rightForkId] == EATING){
          try{
             wait();
          }
@@ -28,8 +32,8 @@ public class Table {
          }
       }
       
-      forks[leftFork(philo)] = false;
-      forks[rightFork(philo)] = false;
+      forks[leftForkId] = false;
+      forks[rightForkId] = false;
       philos[philo] = EATING;
       printState();
    }
@@ -37,11 +41,11 @@ public class Table {
    public synchronized void returnFork (int philo) {
       forks[leftFork(philo)] = true;
       forks[rightFork(philo)] = true;
-      if(philos[rightFork(philo)] == HUNGER){
-         notifyAll();
-      }
+      
       philos[philo] = THINKING;
       printState();
+      
+      notifyAll();
    }
 
    public int leftFork(int philo){
@@ -53,7 +57,7 @@ public class Table {
    }
 
    public void printState(){
-      String msg = "*";
+      String msg = "";
       System.out.print("Philos = [ ");
       for (int i = 0; i < NMB_PHILO; i++) {
          switch (philos[i])

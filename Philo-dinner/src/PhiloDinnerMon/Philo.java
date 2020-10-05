@@ -5,10 +5,10 @@ public class Philo extends Thread {
    Table table;
    int philo;
 
-   public Philo (String name, Table dinner_table, int phil){
-      super(name);
+   public Philo(int id, Table dinner_table){
+      super("" + id);
       table = dinner_table;
-      philo = phil;
+      philo = id;
    }
 
    public void run (){
