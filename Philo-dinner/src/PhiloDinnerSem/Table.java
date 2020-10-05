@@ -1,79 +1,56 @@
 package PhiloDinnerSem;
 
 import java.util.concurrent.Semaphore;
+
 public class Table {
+	private int NMB_PHILOS;
+	private Semaphore[] forks;
+
+	public Table(int philos) {    
+		this.NMB_PHILOS = philos;
+		this.forks = new Semaphore[philos];
+		
+		for(int i = 0; i < philos; i++) {
+			this.forks[i] = new Semaphore(1);
+		}
+	}
 	
-   final static int THINKING = 1;
-   final static int EATING = 2;
-   final static int HUNGER = 3;
-   final static int NMB_PHILO = 5;
-   boolean[] forks = new boolean[NMB_PHILO];
-   int[] philos = new int[NMB_PHILO];
-   Semaphore[] sem = new Semaphore[NMB_PHILO];
-   
-   public Table(){
-      for (int i = 0; i < 5; i++){
-         forks[i] = true;
-         philos[i] = THINKING;
-         sem[i] = new Semaphore(5);
-      }
-   }
+	public int leftFork(int philo){
+		return philo;
+	}
 
-   public void getFork(int philo){
-      philos[philo] = HUNGER;
-      while(philos[rightFork(philo)] == EATING){
-         try{
-            wait();
-         }
-         catch(InterruptedException e)
-         {
-        	 System.out.println("The philo died of hunger (starvation)");
-         }
-      }
-      
-      forks[leftFork(philo)] = false;
-      forks[rightFork(philo)] = false;
-      philos[philo] = EATING;
-      printState();
-   }
+	public int rightFork(int philo) {
+		return (philo + 1)%NMB_PHILOS;
+   	}
+	
+	public void getFork(int philo) {
+		
+		int leftForkId = leftFork(philo);
+		int rightForkId = rightFork(philo);
+		
+        if(leftForkId > rightForkId){
+        	int aux = rightForkId;
+        	rightForkId = leftForkId;
+        	leftForkId = aux;
+        }
+        
+		try {
+			forks[leftForkId].acquire();
+            forks[rightForkId].acquire();
+			System.out.println("Philo [" + philo + "] is eating");
+		}catch (InterruptedException e) {
+			System.out.println("The philo died of hunger (starvation)");
+        }
+	}
 
-   public void returnFork (int philo) {
-      forks[leftFork(philo)] = true;
-      forks[rightFork(philo)] = true;
-      if(philos[rightFork(philo)] == HUNGER){
-         notifyAll();
-      }
-      philos[philo] = THINKING;
-      printState();
-   }
+	public void returnFork(int philo) {
 
-   public int leftFork(int philo){
-      return philo;
-   }
-
-   public int rightFork(int philo) {
-      return (philo + 1)%NMB_PHILO;
-   }
-
-   public void printState(){
-      String msg = "*";
-      System.out.print("Philos = [ ");
-      for (int i = 0; i < NMB_PHILO; i++) {
-         switch (philos[i])
-         {
-            case THINKING:
-               msg = "THINKING";
-               break;
-            case EATING:
-               msg = "EATING";
-               break;
-            case HUNGER:
-               msg = "HUNGER";
-               break;
-         }
-         System.out.print(msg + " ");
-      }
-      System.out.println("]");
-   }
-
+		int leftForkId = leftFork(philo);
+		int rightForkId = rightFork(philo);
+		
+        forks[leftForkId].release();
+        forks[rightForkId].release();
+		System.out.println("Philo [" + philo + "] eat. now he will think");
+    }
+	
 }

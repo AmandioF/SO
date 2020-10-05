@@ -1,56 +1,55 @@
 package PhiloDinnerSem;
 
-public class Philo extends Thread {
-   final static int TL = 100;
-   Table table;
-   int philo;
+public class Philo implements Runnable {
 
-   public Philo (String name, Table dinner_table, int phil){
-      super(name);
-      table = dinner_table;
-      philo = phil;
-   }
-   
-   public void run (){
-      int tmp = 0;
-      while (true){
-         tmp = (int) (Math.random() * TL);
-         think(tmp);
-         getFork();
-         tmp = (int) (Math.random() * TL);
-         eat(tmp);
-         returnFork();
-      }
-   }
+	private int id;
+	private Table table;
+	final static int TL = 100;
+	
+	public Philo(int id, Table table) {
+		this.id = id;
+		this.table = table;
 
-   public void think(int tmp){
-      try{
-         sleep(tmp);
-         System.out.println("The philo [" + (philo+1) + "] thought");
-      }
-      catch (InterruptedException e){
-         System.out.println("The philo got a headache");
-      }
-   }
+		new Thread((Runnable) this, "" + id).start();
+	}
 
-   public void eat(int tmp){
-      try{
-         sleep(tmp);
-         System.out.println("The Philo [" + (philo+1) + "] eat");
-      }
-      catch (InterruptedException e)
-      {
-         System.out.println("The philo had a stomachache");
-      }
-   }
+	@Override
+	public void run() {
+		while (true) {
+			thinking();
+			getFork();
+			
+			eating();
+			returnFork();
+		}
+	}
 
-   public void getFork()
-   {
-      table.getFork(philo);
-   }
+	private void thinking() {
+		try {
+			System.out.println("The philo [" + (this.id+1) + "] thought");
+			int tmp = (int) (Math.random() * TL);
+			Thread.sleep(tmp);
+		} catch (InterruptedException e) {
+			System.out.println("The philo got a headache");
+		}
 
-   public void returnFork()
-   {
-      table.returnFork(philo);
-   }
+	}
+
+	private void eating() {
+		try {
+			System.out.println("The Philo [" + (this.id+1) + "] eat");
+			int tmp = (int) (Math.random() * TL);
+			Thread.sleep(tmp);
+		} catch (InterruptedException e) {
+			System.out.println("The philo had a stomachache");
+		}
+	}
+
+	private void getFork() {
+		table.getFork(id);
+	}
+
+	private void returnFork() {
+		table.returnFork(id);
+	}
 }
